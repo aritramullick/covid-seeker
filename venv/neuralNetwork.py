@@ -63,12 +63,7 @@ print(new_input_layer)
 print (len(new_input_layer))
 print(len(new_input_layer[0]))
 
-new_W = np.random.randn(5,13)
-new_X = new_input_layer
-new_O = np.matmul(new_W,new_X)
-
-new_input_layer2 = new_O.tolist()
-
+# now we can use new_input_layer as X for training based on below functions
 
 def sigmoid(t):
     return 1 / (1 + np.exp(-t))
