@@ -17,9 +17,11 @@ iso_encoder2 = preprocessing.LabelEncoder()
 df['continent'] = iso_encoder2.fit_transform(df['continent'])
 # NEEDS TO BE UNCOMMENTED LATER
 for (index,datetype) in enumerate(df.date):
-    datetime = parse(str(datetype))
-    df.date[index] = datetime
-
+    some_date = parse(str(datetype))
+    mydate = datetime.datetime(2021, 1, 1)
+    the_days = mydate - some_date
+    df.date[index] = the_days.days
+# print(df)
 # print(df)
 # m = 2
 # n = 10
