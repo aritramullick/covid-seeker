@@ -31,9 +31,9 @@ for region, df_region in df.groupby('iso_code'):
     df_region['previous_day_cases'] = df_region.new_cases.shift(1)
     df_region['previous_day_deaths'] = df_region.new_deaths.shift(1)
     final_df = final_df.append(df_region)
-    print(df_region)
-
-print (final_df)
+    # print(df_region)
+final_df = final_df.dropna()
+# print (final_df)
 # print(df)
 # print(df)
 # m = 2
@@ -69,30 +69,41 @@ O = np.matmul(W,X)
 print("###############It is result time!##################")
 # print(O)
 
-new_input_layer = O.tolist()
-new_input_layer.append(final_df.date.to_numpy())
-new_input_layer.append(final_df.previous_day_cases.to_numpy())
-new_input_layer.append(final_df.previous_day_deaths.to_numpy())
+new_input_layer = []
+new_input_layer.append(O.tolist())
+new_input_layer.append(final_df.date.tolist())
+new_input_layer.append(final_df.previous_day_cases.tolist())
+new_input_layer.append(final_df.previous_day_deaths.tolist())
 
 print(new_input_layer)
 print (len(new_input_layer))
 print(len(new_input_layer[0]))
 
 # now we can use new_input_layer as X for training based on below functions
-X = np.asarray(new_input_layer)
-y1 = final_df.iloc[:,5].to_numpy()
-y2 = final_df.iloc[:,7].to_numpy()
-y = []
-y.append(y1)
-y.append(y2)
-y = np.asarray(y)
-print(y)
+X = (np.asarray(new_input_layer))
+shape = X.shape
+print("shape:" + str(shape))
+# W = np.random.randn(shape)
+# print(X)
+# print(X.shape)
 
 def sigmoid(t):
-    if (t==0.0):
-        return 1/(1+1)
-
+    t = np.array(t, dtype=np.int64)
     return 1 / (1 + np.exp(-t))
+
+y1 = final_df.iloc[:,5].tolist()
+y2 = final_df.iloc[:,7].tolist()
+y = []
+W = np.random.randn(shape[1],4)
+y.append(y1) #y1 is new_cases on the day
+y.append(y2) #y2 is the new deaths on the day
+y = (np.asarray(y))
+print("x: " + str(X.shape))
+print("y: " + str(y.shape))
+print("W: " + str(W.shape))
+
+# print(y)
+# print(y.shape)
 
 
 # Derivative of sigmoid
@@ -104,23 +115,26 @@ def sigmoid_derivative(p):
 class NeuralNetwork:
     def __init__(self, x, y):
         self.input = x
+        print("x: "+ str(self.input.shape))
         self.weights1 = np.random.rand(self.input.shape[1], 4)  # considering we have 4 nodes in the hidden layer
-        self.weights2 = np.random.rand(4, 1)
+        self.weights2 = np.random.rand(4, 2) # ADELE
+        print("weights1: " + str(self.weights1.shape))
+        print("weights2: " + str(self.weights2.shape))
         self.y = y
         self.output = np.zeros(y.shape)
 
     def feedforward(self):
-        self.layer1 = sigmoid(np.dot(self.input, self.weights1))
-        self.layer2 = sigmoid(np.dot(self.layer1, self.weights2))
+        self.layer1 = sigmoid(np.matmul(self.input, self.weights1))
+        self.layer2 = sigmoid(np.matmul(self.layer1, self.weights2))
         return self.layer2
 
     def backprop(self):
-        d_weights2 = np.dot(self.layer1.T, 2 * (self.y - self.output) * sigmoid_derivative(self.output))
-        d_weights1 = np.dot(self.input.T, np.dot(2 * (self.y - self.output) * sigmoid_derivative(self.output),
+        d_weights2 = np.matmul(self.layer1.T, 2 * (self.y.T - self.output) * sigmoid_derivative(self.output))
+        d_weights1 = np.matmul(self.input.T, np.dot(2 * (self.y.T - self.output) * sigmoid_derivative(self.output),
                                                  self.weights2.T) * sigmoid_derivative(self.layer1))
 
-        self.weights1 += d_weights1
-        self.weights2 += d_weights2
+        self.weights1 = self.weights1 + d_weights1
+        self.weights2 = self.weights2 + d_weights2
 
     def train(self, X, y):
         self.output = self.feedforward()
@@ -134,7 +148,7 @@ for i in range(1500):  # trains the NN 1,000 times
         print("Input : \n" + str(X))
         print("Actual Output: \n" + str(y))
         print("Predicted Output: \n" + str(NN.feedforward()))
-        print("Loss: \n" + str(np.mean(np.square(y - NN.feedforward()))))  # mean sum squared loss
+        print("Loss: \n" + str(np.mean(np.square(y.T - NN.feedforward()))))  # mean sum squared loss
         print("\n")
 
     NN.train(X, y)
