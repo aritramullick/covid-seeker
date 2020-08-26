@@ -69,30 +69,32 @@ O = np.matmul(W,X)
 print("###############It is result time!##################")
 # print(O)
 
-new_input_layer = []
-new_input_layer.append(O.tolist())
-new_input_layer.append(final_df.date.tolist())
-new_input_layer.append(final_df.previous_day_cases.tolist())
-new_input_layer.append(final_df.previous_day_deaths.tolist())
+new_input_layer = O.tolist()
+new_input_layer.append(final_df.date.to_numpy())
+new_input_layer.append(final_df.previous_day_cases.to_numpy())
+new_input_layer.append(final_df.previous_day_deaths.to_numpy())
 
 print(new_input_layer)
 print (len(new_input_layer))
 print(len(new_input_layer[0]))
 
 # now we can use new_input_layer as X for training based on below functions
-X = (np.asarray(new_input_layer))
+X = (np.asarray(new_input_layer)).T
 shape = X.shape
-print("shape:" + str(shape))
 # W = np.random.randn(shape)
 # print(X)
 # print(X.shape)
 
 def sigmoid(t):
+#     print(t.shape)
     t = np.array(t, dtype=np.int64)
+    # if (t==0.0):
+    #     return 1/(1+1)
+
     return 1 / (1 + np.exp(-t))
 
-y1 = final_df.iloc[:,5].tolist()
-y2 = final_df.iloc[:,7].tolist()
+y1 = final_df.iloc[:,5].to_numpy()
+y2 = final_df.iloc[:,7].to_numpy()
 y = []
 W = np.random.randn(shape[1],4)
 y.append(y1) #y1 is new_cases on the day
@@ -100,10 +102,12 @@ y.append(y2) #y2 is the new deaths on the day
 y = (np.asarray(y))
 print("x: " + str(X.shape))
 print("y: " + str(y.shape))
-print("W: " + str(W.shape))
+print(W.shape)
 
 # print(y)
 # print(y.shape)
+
+
 
 
 # Derivative of sigmoid
